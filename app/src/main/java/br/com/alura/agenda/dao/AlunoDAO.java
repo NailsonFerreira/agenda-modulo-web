@@ -18,7 +18,7 @@ import br.com.alura.agenda.modelo.Aluno;
  */
 public class AlunoDAO extends SQLiteOpenHelper {
     public AlunoDAO(Context context) {
-        super(context, "Agenda", null, 4);
+        super(context, "Agenda", null, 6);
     }
 
     @Override
@@ -29,7 +29,9 @@ public class AlunoDAO extends SQLiteOpenHelper {
                 "telefone TEXT, " +
                 "site TEXT, " +
                 "nota REAL, " +
-                "caminhoFoto TEXT);";
+                "caminhoFoto TEXT," +
+                "sincronizado INT DEFAULT 0," +
+                "desativado INT DEFAULT 0);";
         db.execSQL(sql);
     }
 
@@ -78,6 +80,13 @@ public class AlunoDAO extends SQLiteOpenHelper {
                         alunos) {
                     db.execSQL(atualizaIdDoAluno, new String[]{geraUUID(), aluno.getId()});
                 }
+            case 4:
+                String adicionaCampoSincronizado = "ALTER TABLE Alunos ADD COLUMN sincronizado INT DEFAULT 0";
+                db.execSQL(adicionaCampoSincronizado);
+            case 5:
+                String adicionaCampoDesativado = "ALTER TABLE Alunos ADD COLUMN desativado INT DEFAULT 0";
+                db.execSQL(adicionaCampoDesativado);
+
 
         }
 
@@ -110,11 +119,13 @@ public class AlunoDAO extends SQLiteOpenHelper {
         dados.put("site", aluno.getSite());
         dados.put("nota", aluno.getNota());
         dados.put("caminhoFoto", aluno.getCaminhoFoto());
+        dados.put("sincronizado", aluno.getSincronizado());
+        dados.put("desativado", aluno.getDesativado());
         return dados;
     }
 
     public List<Aluno> buscaAlunos() {
-        String sql = "SELECT * FROM Alunos;";
+        String sql = "SELECT * FROM Alunos WHERE desativado = 0;";
         SQLiteDatabase db = getReadableDatabase();
         Cursor c = db.rawQuery(sql, null);
 
@@ -136,6 +147,8 @@ public class AlunoDAO extends SQLiteOpenHelper {
             aluno.setSite(c.getString(c.getColumnIndex("site")));
             aluno.setNota(c.getDouble(c.getColumnIndex("nota")));
             aluno.setCaminhoFoto(c.getString(c.getColumnIndex("caminhoFoto")));
+            aluno.setSincronizado(c.getInt(c.getColumnIndex("sincronizado")));
+            aluno.setDesativado(c.getInt(c.getColumnIndex("desativado")));
 
             alunos.add(aluno);
         }
@@ -146,7 +159,12 @@ public class AlunoDAO extends SQLiteOpenHelper {
         SQLiteDatabase db = getWritableDatabase();
 
         String[] params = {aluno.getId().toString()};
-        db.delete("Alunos", "id = ?", params);
+        if(aluno.estaDesativado()) {
+            db.delete("Alunos", "id = ?", params);
+        } else {
+            aluno.desativa();
+            altera(aluno);
+        }
     }
 
     public void altera(Aluno aluno) {
@@ -170,6 +188,7 @@ public class AlunoDAO extends SQLiteOpenHelper {
         for (Aluno aluno :
                 alunos) {
 
+            aluno.sincroniza();
 
             if (existe(aluno)) {
                 if(aluno.estaDesativado()){
@@ -191,5 +210,13 @@ public class AlunoDAO extends SQLiteOpenHelper {
         Cursor cursor = db.rawQuery(existe, new String[]{aluno.getId()});
         int quantidade = cursor.getCount();
         return quantidade > 0;
+    }
+
+    public List<Aluno> listaNaoSincronizado(){
+        SQLiteDatabase db = getReadableDatabase();
+        String sql = "SELECT * FROM Alunos WHERE sincronizado = 0";
+        Cursor cursor = db.rawQuery(sql, null);
+        return populaAlunos(cursor);
+
     }
 }
