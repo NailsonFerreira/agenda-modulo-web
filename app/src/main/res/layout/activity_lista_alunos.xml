@@ -29,4 +29,22 @@
         android:layout_marginRight="16dp"
         android:id="@+id/novo_aluno"/>
 
+    <Button
+        android:id="@+id/button_barcode"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/novo_aluno"
+        android:layout_alignParentStart="true"
+        android:layout_marginStart="16dp"
+        android:text="Button" />
+
+    <TextView
+        android:id="@+id/barcodeMensagem"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="30dp"
+        android:text="Barc" />
+
 </RelativeLayout>

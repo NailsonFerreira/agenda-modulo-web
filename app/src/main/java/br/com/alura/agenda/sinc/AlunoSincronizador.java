@@ -3,13 +3,11 @@ package br.com.alura.agenda.sinc;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.util.Log;
-import android.widget.Toast;
 
 import org.greenrobot.eventbus.EventBus;
 
 import java.util.List;
 
-import br.com.alura.agenda.ListaAlunosActivity;
 import br.com.alura.agenda.dao.AlunoDAO;
 import br.com.alura.agenda.dto.AlunoSync;
 import br.com.alura.agenda.event.AtualizaListaAlunoEvent;
@@ -30,10 +28,10 @@ public class AlunoSincronizador {
         preferences = new AlunoPreferences(context);
     }
 
-    public void buscaTodos(){
-        if(preferences.temVersao()){
+    public void buscaTodos() {
+        if (preferences.temVersao()) {
             buscaNovos();
-        } else{
+        } else {
             buscaAlunos();
         }
 
@@ -79,7 +77,7 @@ public class AlunoSincronizador {
         };
     }
 
-    public void sincronizaAlunosInternos(){
+    public void sincronizaAlunosInternos() {
         final AlunoDAO dao = new AlunoDAO(context);
 
         List<Aluno> alunos = dao.listaNaoSincronizado();

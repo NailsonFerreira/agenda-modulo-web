@@ -38,6 +38,8 @@ dependencies {
     implementation 'com.google.firebase:firebase-messaging:17.3.3'
     implementation 'com.google.firebase:firebase-core:16.0.4'
     implementation 'org.greenrobot:eventbus:3.0.0'
+    implementation group: 'com.google.zxing', name: 'core', version: '3.2.1'
+    implementation 'com.journeyapps:zxing-android-embedded:3.2.0@aar'
 }
 
 apply plugin: 'com.google.gms.google-services'

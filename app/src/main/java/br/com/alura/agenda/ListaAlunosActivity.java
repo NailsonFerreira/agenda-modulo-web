@@ -1,6 +1,7 @@
 package br.com.alura.agenda;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
@@ -8,6 +9,7 @@ import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
+import android.util.AttributeSet;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.Menu;
@@ -16,6 +18,11 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.google.zxing.integration.android.IntentIntegrator;
+import com.google.zxing.integration.android.IntentResult;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -35,6 +42,8 @@ public class ListaAlunosActivity extends AppCompatActivity {
     private final AlunoSincronizador sincronizador = new AlunoSincronizador(this);
     private ListView listaAlunos;
     private SwipeRefreshLayout swipe;
+    Button botaoBarcode;
+    TextView barcodeCodigo;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,6 +88,16 @@ public class ListaAlunosActivity extends AppCompatActivity {
         registerForContextMenu(listaAlunos);
         sincronizador.buscaTodos();
         sincronizador.sincronizaAlunosInternos();
+
+
+        barcodeCodigo = findViewById(R.id.barcodeMensagem);
+        botaoBarcode = findViewById(R.id.button_barcode);
+        botaoBarcode.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                barcodeCapture();
+            }
+        });
     }
 
     private void carregaLista() {
@@ -105,9 +124,6 @@ public class ListaAlunosActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-
-
-
         carregaLista();
     }
 
@@ -179,6 +195,8 @@ public class ListaAlunosActivity extends AppCompatActivity {
         intentSite.setData(Uri.parse(site));
         itemSite.setIntent(intentSite);
 
+
+
         MenuItem deletar = menu.add("Deletar");
         deletar.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
@@ -196,4 +214,27 @@ public class ListaAlunosActivity extends AppCompatActivity {
         });
     }
 
+    public void barcodeCapture(){
+        IntentIntegrator integrator = new IntentIntegrator(this);
+        integrator.initiateScan();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        IntentResult result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
+        try {
+            if (result != null) {
+                String barcode = result.getContents();
+                if (barcode != null && !"".equals(barcode)) {
+                    barcodeCodigo.setText(barcode);
+                    Toast.makeText(this, "Barcode capturado", Toast.LENGTH_LONG).show();
+                }
+            } else {
+                super.onActivityResult(requestCode, resultCode, data);
+            }
+        } catch (Exception e){
+            Toast.makeText(this, "Ocorreu Um erro", Toast.LENGTH_LONG).show();
+            e.printStackTrace();
+        }
+    }
 }
